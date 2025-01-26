@@ -1,0 +1,132 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+
+function App() {
+  const { register, handleSubmit, setValue, getValues } = useForm({
+    defaultValues: {
+      fname: "",
+      fields: [{ ObjectiveId: "", ObjectiveDescription: "" }],
+    },
+  });
+
+  const [fields, setFields] = useState([{ ObjectiveId: "", ObjectiveDescription: "" }]);
+  const [error, setError] = useState(""); // Error message state
+
+  const handleChange = (index, key, value) => {
+    const updatedFields = fields.map((field, idx) =>
+      idx === index ? { ...field, [key]: value } : field
+    );
+    setFields(updatedFields);
+
+    // Update `react-hook-form` state dynamically
+    setValue(`fields.${index}.${key}`, value);
+
+    // Clear error when valid data is added
+    if (fields.some((field) => field.ObjectiveId && field.ObjectiveDescription)) {
+      setError("");
+    }
+  };
+
+  const addField = () => {
+    // Validate the current fields before adding a new row
+    const isAnyFieldEmpty = fields.some(
+      (field) => !field.ObjectiveId || !field.ObjectiveDescription
+    );
+
+    if (isAnyFieldEmpty) {
+      setError("Please fill in all fields before adding a new row.");
+      return;
+    }
+
+    if (fields.length >= 3) {
+      setError("You can only add up to 3 rows."); // Show error message for limit
+      return;
+    }
+
+    const newField = { ObjectiveId: "", ObjectiveDescription: "" };
+    setFields([...fields, newField]);
+
+    // Add the new field to `react-hook-form` dynamically
+    setValue(`fields.${fields.length}`, newField);
+    setError(""); // Clear error message when within limit
+  };
+
+  const removeField = (index) => {
+    setFields(fields.filter((_, idx) => idx !== index));
+
+    // Remove the field from `react-hook-form` state
+    const updatedFields = getValues("fields").filter((_, idx) => idx !== index);
+    setValue("fields", updatedFields);
+    setError(""); // Clear error message
+  };
+
+  const onSubmit = (data) => {
+    console.log("Submitted data:", data);
+  };
+
+  return (
+    <div className="App">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* Register `fname` */}
+        <input
+          {...register("fname", { required: true })}
+          placeholder="First name"
+          className="border p-2 rounded-md mb-4"
+        />
+
+        {fields.map((field, index) => (
+          <div key={index} className="flex flex-col mb-4">
+            <label>
+              Objective ID:
+              <input
+                type="text"
+                value={field.ObjectiveId}
+                onChange={(e) => handleChange(index, "ObjectiveId", e.target.value)}
+                className="border p-2 rounded-md"
+              />
+            </label>
+
+            <label>
+              Objective Description:
+              <input
+                type="text"
+                value={field.ObjectiveDescription}
+                onChange={(e) =>
+                  handleChange(index, "ObjectiveDescription", e.target.value)
+                }
+                className="border p-2 rounded-md"
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={() => removeField(index)}
+              className="bg-red-500 text-white px-4 py-2 rounded-md mt-2"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+
+        {/* Error Message */}
+        {error && <p className="text-red-500 font-bold mb-4">{error}</p>}
+
+        <button
+          type="button"
+          onClick={addField}
+          className="bg-green-500 text-white px-4 py-2 rounded-md mb-4"
+        >
+          Add Field
+        </button>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+        >
+          Submit
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default App;
