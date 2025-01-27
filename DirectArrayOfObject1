@@ -1,0 +1,409 @@
+import React from 'react'
+import { FormControl } from '@mui/base/FormControl';
+import { useState } from 'react';
+import {
+    Grid,
+    InputLabel,
+    TextField,
+    Box,
+    Typography,
+    Radio,
+    RadioGroup,
+    FormControlLabel,
+    FormLabel,
+    Select,
+    MenuItem,
+    IconButton,
+    Button,
+    Divider
+} from "@mui/material";
+import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
+import Input from "@/components/input";
+import Label from "@/components/label";
+import FileCropper from "@/components/file-cropper"
+import AddCircleOutlinedIcon from "@mui/icons-material/AddCircleOutlined";
+import CollectionFormController from './collectonFormController';
+import {
+    CONTROLMANAGEMENTFORM,
+} from "@/utils/systemLabels";
+import { useForm, useFieldArray } from 'react-hook-form';
+
+function ControlManagementForm() {
+
+
+    let isView = false
+
+    const {
+        rows,
+        setRows,
+        handleAddRow,
+        handleRowChange,
+        radioValue,
+        setRadioValue,
+        textFieldValue,
+        setTextFieldValue,
+        dropdownValue,
+        setDropdownValue,
+        handleRemoveRow,
+        register,
+        handleSubmit,
+        getValues,
+        watch,
+        control,
+        errors,
+        errorss,
+        setErrors,
+        addError
+    } = CollectionFormController()
+
+
+    const handleChange = (index: number, field: string, value: string) => {
+        const newFields: any = [...rows];
+        newFields[index][field as keyof any] = value;
+        setRows(newFields);
+        console.log(rows, 'rows', "Index file")
+    };
+
+    // const handleChange = (index: number, field: string, value: string) => {
+    //     const newFields: any = [...rows];
+    //     newFields[index][field as keyof any] = value;
+    //     setRows(newFields);
+
+    //     // Clear error for the specific field if it now has a value
+    //     if (value.trim() !== '') {
+    //         setErrors((prevErrors) => ({
+    //             ...prevErrors,
+    //             [index]: { ...prevErrors[index], [field]: '' },
+    //         }));
+    //     }
+    // };
+
+    const handleFileChange = (file: File) => {
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setRows((prevRows) => {
+                    // Update the first row in the state
+                    const updatedRows = prevRows.map((row, index) =>
+                        index === 0 ? { ...row, imageFile: reader.result } : row
+                    );
+                    return updatedRows;
+                });
+            };
+            reader.readAsDataURL(file); // Read the file as a data URL
+        }
+    };
+
+
+
+    const onSubmit = () => {
+        let hasErrors = false;
+        const newErrors: any = {};
+
+        rows.forEach((row, index) => {
+            if (!row.linkTitle.trim()) {
+                hasErrors = true;
+                newErrors[index] = { ...newErrors[index], linkTitle: 'Link Title is required' };
+            }
+
+            if (!row.linkUrl.trim()) {
+                hasErrors = true;
+                newErrors[index] = { ...newErrors[index], linkUrl: 'Link URL is required' };
+            }
+        });
+
+        if (hasErrors) {
+            setErrors(newErrors);
+            console.log("Form submission failed due to validation errors", newErrors);
+            return;
+        }
+
+        console.log("Form submitted successfully", rows);
+    };
+
+
+
+    return (
+        <div className='formControlManagementAll'>
+            <div className='headerContentWithButton'>
+                <h3>Control Management</h3>
+
+                <Button
+                    variant="contained"
+                    className="bg-dark p-12 icon_button btnHeadControlForm"
+                >
+                    Back
+                </Button>
+            </div>
+            <Divider></Divider>
+
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <FormControl fullWidth margin="normal" >
+                    <Grid spacing={2} className='customNavFields'>
+                        <Grid width={1000} >
+
+                            <Box className={`mb-16 $[CONTROLMANAGEMENTFORM.TITLE]}`}>
+                                <Label
+                                    label={CONTROLMANAGEMENTFORM.Title}
+                                    required={true}
+                                />
+                                <Input
+                                    disabled={isView}
+                                    {...register("title", {
+                                        required: CONTROLMANAGEMENTFORM.TITLEREQUIREDNAME,
+                                        validate: (value) => {
+                                            if (value.trim().length === 0) {
+                                                return CONTROLMANAGEMENTFORM.WHITESPACENAME;
+                                            }
+                                            return true;
+                                        },
+                                    })}
+
+                                    onChange={(event: any) => {
+                                        const updatedRows = [...rows];
+                                        updatedRows[0].title = event.target.value;
+                                        setRows(updatedRows);
+                                    }}
+                                />
+                                {errors.title && (
+                                    <Typography className="text-danger">
+                                        {errors?.title?.message ?? ""}
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Grid>
+
+                        <Grid width={1000}>
+                            <InputLabel className='popUpFieldTitle'>
+                                <Grid item xs={12} sm={6} md={6} lg={12} xl={12}>
+                                    <div className="">
+                                        <FileCropper
+                                            ImgWidth={1200}
+                                            ImgHeight={200}
+                                            labelName='Image Upload'
+                                            onChange={(file: File) => handleFileChange(file)}
+                                        />
+                                    </div>
+
+                                </Grid>
+                            </InputLabel>
+                        </Grid>
+                    </Grid>
+
+                    <div className='parent-control-ManagementForm'>
+                        {rows.map((row, index) => (
+                            <Grid container spacing={2} key={row.id}>
+                                <Grid item xs={12} sm={4} md={4} lg={4} xl={3}>
+                                    <Box className={`mb-16 $[CONTROLMANAGEMENTFORM.TITLE]}`}>
+                                        <Label
+                                            label={CONTROLMANAGEMENTFORM.LINKTITLE}
+                                            required={true}
+                                        />
+
+                                        <TextField
+                                            type="text"
+                                            fullWidth
+                                            className="form_field_layout input_layout custom-input"
+                                            value={row.linkTitle}
+                                            name="linkTitle"
+                                            onChange={(event: any) => handleChange(index, 'linkTitle', event.target.value)}
+                                            error={Boolean(errorss[index]?.linkTitle)}
+                                            helperText={errorss[index]?.linkTitle}
+
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={12} sm={4} md={4} lg={4} xl={3}>
+                                    <FormLabel className="allFormFieldCustomNav">Choose an Option</FormLabel>
+                                    <RadioGroup
+                                        row
+                                        className="radio-align"
+                                        value={row.linkType}
+                                        onChange={(e) => handleRowChange(row.id, 'linkType', e.target.value)}
+                                    >
+                                        <FormControlLabel
+                                            value="external"
+                                            control={<Radio />}
+                                            label="External"
+                                        />
+                                        <FormControlLabel
+                                            value="internal"
+                                            control={<Radio />}
+                                            label="Internal"
+                                        />
+                                    </RadioGroup>
+                                </Grid>
+                                <Grid
+                                    item
+                                    xs={12}
+                                    sm={4}
+                                    md={4}
+                                    lg={4}
+                                    xl={6}
+                                    className="controlFormRow1"
+                                >
+                                    {row.linkType === 'external' ? (
+                                        <>
+                                            <Box className='d-flex align-items-center'>
+
+                                                <Grid container spacing={3}>
+                                                    <Grid item xs={12} sm={4} md={6} lg={6} xl={12}>
+
+                                                        <Label
+                                                            label={CONTROLMANAGEMENTFORM.LINKURL}
+                                                            required={true}
+                                                        />
+
+
+                                                        {/* <TextField
+                                                            type="text"
+                                                            fullWidth
+                                                            className={`form_field_layout input_layout`}
+                                                            value={row.linkUrl}
+                                                            name="linkUrl"
+                                                            onChange={(event: any) => handleChange(index, 'linkUrl', event.target.value)}
+                                                        /> */}
+
+                                                        <TextField
+                                                            type="text"
+                                                            fullWidth
+                                                            className={`form_field_layout input_layout custom-input`}
+                                                            value={row.linkUrl}
+                                                            name="linkUrl"
+                                                            onChange={(event: any) => handleChange(index, 'linkUrl', event.target.value)}
+                                                            error={Boolean(errorss[index]?.linkUrl)}
+                                                            helperText={errorss[index]?.linkUrl}
+
+                                                        />
+                                                    </Grid>
+                                                </Grid>
+
+
+                                                {/* <IconButton
+                                                    aria-label="delete"
+                                                    className="text-danger remove-select-url"
+                                                    onClick={() => handleRemoveRow(row.id)}                                        >
+                                                    <DoDisturbOnIcon />
+                                                </IconButton> */}
+
+                                                {rows.length > 1 && (
+                                                    <IconButton
+                                                        aria-label="delete"
+                                                        className="text-danger remove-select-url"
+                                                        onClick={() => handleRemoveRow(row.id)}
+                                                    >
+                                                        <DoDisturbOnIcon />
+                                                    </IconButton>
+                                                )}
+                                            </Box>
+                                        </>
+                                    ) : (
+
+                                        <Box className='d-flex align-items-center'>
+                                            <Grid container spacing={3}>
+                                                <Grid item xs={12} sm={4} md={6} lg={6} xl={6}>
+                                                    <InputLabel id="dropdown-label" className='allFormFieldCustomNav '>Select Option</InputLabel>
+                                                    <Select
+                                                        labelId="dropdown-label"
+                                                        id="dropdown"
+                                                        label="Select Option"
+                                                        fullWidth
+                                                        className='multi-select-url titlePopUpInputField1 titlePopUp'
+                                                        sx={{
+                                                            borderRadius: '10px'
+                                                        }}
+                                                        name='selectObjectName'
+                                                        value={row.selectObjectName}
+                                                        onChange={(event: any) => handleChange(index, 'selectObjectName', event.target.value)}
+                                                    >
+                                                        <MenuItem value="option1">Option 1</MenuItem>
+                                                        <MenuItem value="option2">Option 2</MenuItem>
+                                                        <MenuItem value="option3">Option 3</MenuItem>
+                                                    </Select>
+                                                </Grid>
+                                                <Grid item xs={12} sm={4} md={6} lg={6} xl={6}>
+                                                    <InputLabel id="dropdown-label" className='allFormFieldCustomNav'>Select Option</InputLabel>
+                                                    <Select
+                                                        labelId="dropdown-label"
+                                                        id="dropdown"
+                                                        label="Select Option"
+                                                        fullWidth
+                                                        className='multi-select-url titlePopUp'
+                                                        variant='outlined'
+                                                        sx={{
+                                                            borderRadius: '10px'
+                                                        }}
+                                                        name='selectObjectValue'
+                                                        value={row.selectObjectValue}
+                                                        onChange={(event: any) => handleChange(index, 'selectObjectValue', event.target.value)}
+
+                                                    >
+                                                        <MenuItem value="option1">Option 1</MenuItem>
+                                                        <MenuItem value="option2">Option 2</MenuItem>
+                                                        <MenuItem value="option3">Option 3</MenuItem>
+                                                    </Select>
+                                                </Grid>
+                                            </Grid>
+                                            {/* <IconButton
+                                                aria-label="delete"
+                                                className="text-danger remove-select-url"
+                                                onClick={() => handleRemoveRow(row.id)}                                        >
+                                                <DoDisturbOnIcon />
+                                            </IconButton> */}
+
+                                            {rows.length > 1 && (
+                                                <IconButton
+                                                    aria-label="delete"
+                                                    className="text-danger remove-select-url"
+                                                    onClick={() => handleRemoveRow(row.id)}
+                                                >
+                                                    <DoDisturbOnIcon />
+                                                </IconButton>
+                                            )}
+                                        </Box>
+                                    )}
+                                </Grid>
+                            </Grid>
+                        ))}
+
+                        {/* {addError && <p className="text-red-500 font-bold mb-4">{addError}</p>} */}
+                        {addError && (
+                            <Typography className="text-danger custom-error-message">
+                                {addError}
+                            </Typography>
+                        )}
+
+                        <Grid item xs={12}>
+                            <div className="d-flex mb-16">
+                                <Button
+                                    variant="contained"
+                                    className="save_button button add_more mr-0"
+                                    startIcon={<AddCircleOutlinedIcon />}
+                                    onClick={handleAddRow}
+                                >
+                                    Add More
+                                </Button>
+                            </div>
+                        </Grid>
+
+                    </div>
+                    <div className='customButtonCollectionForm'>
+                        <Button variant="outlined" className='customCancelButton'>
+                            Cancel
+                        </Button>
+
+                        <Button variant="contained" className='customSaveButtonCollectionForm' type='submit'>
+                            Save
+                        </Button>
+                    </div>
+                </FormControl>
+            </form>
+
+
+
+
+        </div>
+    )
+}
+
+export default ControlManagementForm
