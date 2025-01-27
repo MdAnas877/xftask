@@ -1,0 +1,155 @@
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+
+function CollectionFormController() {
+    const { register,
+        handleSubmit,
+        getValues,
+        watch,
+        control,
+        formState: { errors },
+    } = useForm({
+        defaultValues: {
+            imageFile: '', titleLink: ''
+        }
+    })
+
+
+    const [radioValue, setRadioValue] = useState("external");
+    const [textFieldValue, setTextFieldValue] = useState("facebook.com");
+    const [dropdownValue, setDropdownValue] = useState("");
+    const [errorss, setErrors] = useState<{ [key: number]: { [key: string]: string } }>({});
+    const [addError, setAddError] = useState("");
+
+    const [rows, setRows] = useState([
+        { id: 1, title: '', imageFile: null, linkTitle: '', linkType: 'external', linkUrl: 'https://solidcore.fxbytes.com', selectObjectName: 'option1', selectObjectValue: 'option3' },
+    ]);
+
+
+
+    const handleAddRow = () => {
+        const isAnyFieldEmpty = rows.some(
+            (field) => !field.linkTitle || !field.linkUrl
+        );
+
+        if (isAnyFieldEmpty) {
+            setAddError("Please fill  all fields before adding a new row.");
+            return;
+        }
+
+        setAddError("");
+
+
+        setRows([...rows, { id: Date.now(), linkTitle: '', linkType: 'external', linkUrl: '', dropdownValue: '' }]);
+    };
+
+
+    const handleRowChange = (id: any, field: string, value: string) => {
+        setRows(
+            rows.map((row) =>
+                row.id === id ? { ...row, [field]: value } : row
+            )
+        );
+    };
+
+    const handleRemoveRow = (id) => {
+        setRows(rows.filter((row) => row.id !== id));
+    };
+
+
+
+
+
+    const handleAddField = () => {
+        const newFieldErrors: any = {};
+        const newFieldUniqueCheckErrors: any = {};
+        let allFieldsFilled = true;
+        let uniqueCheck = true;
+        rows.forEach((field, index) => {
+            const rowFilled =
+                field.ObjectiveDescription?.trim() || field.Ids.length > 0;
+            if (!rowFilled) {
+                newFieldErrors[index] = showActivityButton
+                    ? FUNCTIONFORMLABELS.AllFIELDSFILLEDBEFORADDNEW
+                    : FUNCTIONFORMLABELS.AllFIELDSFILLEDBEFORADDNEWWITHOUTACTIVITY;
+                allFieldsFilled = false;
+            }
+        });
+
+        fields.forEach((field, index) => {
+            for (let i = 0; i < fields.length; i++) {
+                if (
+                    i !== index &&
+                    JSON.stringify(fields[i].Ids) === JSON.stringify(field.Ids) &&
+                    field.Ids.length > 0
+                ) {
+                    newFieldUniqueCheckErrors[index] = FUNCTIONFORMLABELS.UNIQUEFIELDS;
+                    uniqueCheck = false;
+                }
+            }
+        });
+
+        if (!allFieldsFilled) {
+            setFieldErrors(newFieldErrors);
+            return;
+        }
+        // Reset errors when adding new field
+        setFieldErrors({});
+        setfieldUniqueCheckErrors({});
+
+        setFields([
+            ...fields,
+            { ObjectiveId: "", ObjectiveDescription: "", ObjectiveType: 0, Ids: [] },
+        ]);
+        setValue("FunctionObjectives", fields);
+    };
+
+    // const handleChange = (index: number, field: string, value: string) => {
+    //     const newFields: any = [...rows];
+    //     newFields[index][field as keyof any] = value;
+    //     setRows(newFields);
+    //     console.log(rows, 'rows', "Index file")
+    // };
+
+    const handleChange = (index: number, field: string, value: string) => {
+        const updatedFormState: any = [...rows];
+        updatedFormState[index][field] = value;
+
+        // Clear the error when the user starts typing
+        const updatedErrors = [...errorss];
+        if (value.trim()) {
+            updatedErrors[index] = { ...updatedErrors[index], [field]: undefined };
+        }
+
+        setRows(updatedFormState);
+        setErrors(updatedErrors);
+    };
+
+
+
+    return {
+        rows,
+        setRows,
+        handleAddRow,
+        handleRowChange,
+        radioValue,
+        setRadioValue,
+        textFieldValue,
+        setTextFieldValue,
+        dropdownValue,
+        setDropdownValue,
+        handleRemoveRow,
+        register,
+        handleSubmit,
+        getValues,
+        watch,
+        control,
+        errors,
+        errorss,
+        setErrors,
+        addError,
+        handleChange
+    }
+}
+
+export default CollectionFormController;
