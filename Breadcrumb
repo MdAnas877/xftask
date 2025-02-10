@@ -1,0 +1,190 @@
+import { Card, CardContent, Typography, Stack, Box, IconButton, MenuItem } from "@mui/material";
+import React, { useState } from "react";
+import FunctionBreadcurmbLoader from "@/containers/preview/common/functionBreadcurmbLoader";
+import { ArrowDropDownIcon } from "@mui/x-date-pickers";
+import { ArrowRight } from "@mui/icons-material";
+import OtherActivityBreadcumb from './OtherActivityBreadcumb';
+import { index } from 'd3';
+
+
+interface ActivitiesProps {
+  navSearchData: any[];
+  activityCollapsed: any[]
+  setActivityCollapsed: any
+}
+
+let isPopup = "true"
+
+const Activities: React.FC<ActivitiesProps> = ({ navSearchData, activityCollapsed, setActivityCollapsed }) => {
+  // const [collapsed, setCollapsed] = React.useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+
+  const toggleCollapse = (index: number) => {
+    console.log("h1");
+
+    setActivityCollapsed((prev: any) => {
+      const newState = [...prev];
+      newState[index] = !newState[index]; // Toggle the specific index
+      return newState;
+    });
+  };
+
+  // activityBreadcurmbData.map((val) => {
+  //   console.log(val);
+
+  // })
+
+
+
+  return (
+    <>
+      {/* <Stack spacing={2}>
+        {navSearchData.length > 0 ? (
+          navSearchData.map((item, index) => (
+            <Box key={index} className="d-flex" sx={{ gap: '5' }}>
+              <Typography variant="subtitle1" >
+                {item.name}
+              </Typography>
+
+            </Box>
+          ))
+        ) : (
+          <Typography variant="body1" color="textSecondary">
+            No data available
+          </Typography>
+        )}
+      </Stack> */}
+
+
+
+
+      {/* <div className="search-tool-space_1">
+        <div className="d-flex align-items-center flex-wrap breadcrumb-space breadcrumb-top-space">
+          {isPopup &&
+            otherActivityBreadcurmbData &&
+            otherActivityBreadcurmbData.length > 0 && (
+              <IconButton onClick={toggleCollapse} sx={{ p: 0 }}>
+                {collapsed ? (
+                  <ArrowDropDownIcon className="arrow_button1" />
+                ) : (
+                  <ArrowRight className="arrow_button" />
+                )}
+              </IconButton>
+            )}
+
+          {true
+            ? activityBreadcurmbData &&
+            activityBreadcurmbData.length > 0 &&
+            activityBreadcurmbData.map((breadcurm: any, index: any) => (
+              <React.Fragment key={index}>
+                <Box className={` activity_buttons p-1`}>
+                  {isPopup ? (
+                    <span
+                      className={`breadcurmb_button  button p-10`}
+                    >
+                      {breadcurm?.name ?? ""}
+                    </span>
+                  ) : (
+                    <Typography className="breadcurmb_color">
+                      {breadcurm?.name ?? ""}
+                    </Typography>
+                  )}
+                </Box>
+                <span className="breadcrum-angle-icon">
+                  {index < activityBreadcurmbData.length - 1 && ">"}
+                </span>
+              </React.Fragment>
+            ))
+            : isPopup && <FunctionBreadcurmbLoader />}
+        </div>
+        {isPopup && (
+          <Box>
+            <OtherActivityBreadcumb
+              collapsed={collapsed}
+              activityBreadcurmbData={activityBreadcurmbData}
+              otherActivityBreadcurmbData={otherActivityBreadcurmbData}
+            />
+          </Box>
+        )}
+      </div> */}
+
+
+
+
+
+      {
+        //Render Active
+        navSearchData.length &&
+        navSearchData.map((item, index) => {
+
+          return <>
+            <div key={index} className='d-flex'>
+              <IconButton onClick={() => toggleCollapse(index)} sx={{ p: 0 }}>
+                {activityCollapsed[index] ? (
+                  <ArrowDropDownIcon className="arrow_button1" />
+                ) : (
+                  <ArrowRight className="arrow_button" />
+                )}
+              </IconButton>
+
+              {
+                Object.entries(item.breadcrumb).map(([key, value]) => {
+                  return <>
+                    {/* Display active breadcrum */}
+                    {(key === 'active' &&
+                      value?.length) &&
+                      value.map((active, index) => {
+                        return <div> {active.name + ' >  '}</div>
+                      })
+                    }
+
+                  </>
+                })
+              }
+              <div> {item.name}</div>
+            </div>
+            {
+              activityCollapsed[index] && Object.entries(item.breadcrumb).map(([key, value]) => {
+                return <>
+                  {/* Display active breadcrum */}
+                  {(key === 'other' &&
+                    value?.length) &&
+                    value.map((other, otherIndex) => {
+                      return <div className='d-flex' key={otherIndex}>
+                        {
+                          other.length &&
+                          other.map((otherChild, childIndex) => {
+                            return <div key={otherChild}> {otherChild.name + ' > '}</div>
+                          })}
+                      </div>
+                    })
+                  }
+                </>
+              })
+            }
+          </>
+        })
+      }
+
+
+
+
+      {selectedItem !== null && (
+        <Box>
+          <OtherActivityBreadcumb collapsed={false} />
+        </Box>
+      )}
+
+      {/* <Box>
+        <OtherActivityBreadcumb
+          collapsed={collapsed}
+        activityBreadcurmbData={activityBreadcurmbData}
+        otherActivityBreadcurmbData={otherActivityBreadcurmbData}
+        />
+      </Box> */}
+    </>
+  );
+};
+
+export default Activities;
